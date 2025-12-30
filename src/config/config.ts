@@ -17,7 +17,9 @@ const _config = {
   RZP_TEST_KEY_SECRET: process.env.RZP_TEST_KEY_SECRET,
   MAIL_SECRET_KEY : process.env.MAIL_PASSKEY,
   MAIL_ADDRESS_KEY : process.env.MAIL_ADDRESS,
-  RZP_TEST_KEY_WEBHOOK_SECRET : process.env.RZP_TEST_KEY_WEBHOOK_SECRET
+  RZP_TEST_KEY_WEBHOOK_SECRET : process.env.RZP_TEST_KEY_WEBHOOK_SECRET,
+  OPENAI_API_KEY : process.env.OPENAI_API_KEY,
+  JWT_SECRET : process.env.JWT_SECRET,
 }
 
 export const config = Object.freeze(_config);

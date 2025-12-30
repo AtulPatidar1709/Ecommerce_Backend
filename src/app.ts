@@ -5,6 +5,11 @@ import { config } from './config/config';
 import userRouter from './user/userRoutes';
 import ErrorHandlerMiddleWare from './middlewares/ErrorHandlerMiddleWare';
 
+
+// Chat Bot - Imports
+import { Server } from 'socket.io';
+import { createServer } from 'http';
+
 //Routes
 import cartRoutes from './cart/cartRoutes';
 import optRoutes from './user/otp/otpRoutes';
@@ -13,12 +18,32 @@ import sessionRoutes from './session/sessionRoutes';
 import productRoutes from './product/productRoutes';
 import addressRoutes from './address/addressRoutes';
 import paymentRoutes from './payment/paymentRoutes';
+import { authSocket } from './middlewares/authMiddleware';
+import botRoutes from './chatBot/botRoutes';
 
 const app = express();
+const server = createServer(app);
 
-app.use('/api/payment/payment-verify', express.raw({ type: 'application/json' }));
+app.use(cookieParser(config.cookie_secret));
 
-app.use(express.json());
+const io = new Server(server, {
+    cors: {
+        origin: config.frontendDomain,
+        methods: ['GET', 'POST'],
+        credentials: true,
+    }
+});
+
+const wrap = (middleware: any) => (socket: any, next: any) => middleware(socket.request, {}, next);
+
+io.use(wrap(cookieParser(config.cookie_secret)));
+
+// Socket Authentication Middleware
+io.use(authSocket);
+
+io.on('connection', (socket : any) => {
+    console.log(`User connected: ${socket.userId}`);   
+});
 
 app.use(
     cors({
@@ -27,12 +52,15 @@ app.use(
     })
 );
 
-app.use(cookieParser(config.cookie_secret));
+app.use('/api/payment/payment-verify', express.raw({ type: 'application/json' }));
+
+app.use(express.json());
 
 app.get("/", (req, res, next) => {
   res.json({ message: "Welcome to elib apis" });
 });
 
+app.get('/', (_, res) => res.json({ message: 'Welcome to elib apis' }));
 app.use("/api/users", userRouter);
 app.use("/api/otp", optRoutes);
 app.use("/api/products", productRoutes);
@@ -42,6 +70,8 @@ app.use("/api/session", sessionRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/payment", paymentRoutes);
 
+app.use('/api/bot', botRoutes(io));
+
 app.use(ErrorHandlerMiddleWare);
 
-export default app;
+export { app, server as httpServer };
