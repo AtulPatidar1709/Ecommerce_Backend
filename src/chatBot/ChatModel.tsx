@@ -5,6 +5,7 @@ const chatSchema = new mongoose.Schema({
   role: { type: String, enum: ['user', 'assistant', 'tool'] },
   content: String,
   time: { type: Date, default: Date.now },
+  expiredAt: { type: Date, default: 1000 * 60 * 60 },
 });
 
 const Chat = model('Chat', chatSchema);

@@ -14,8 +14,6 @@ const getCartData = async (req: Request, res: Response, next: NextFunction) => {
 
     const result = formatCart(cart);
 
-    console.log("Format data is ", result);
-
     return res.status(200).json({
       message: "Cart fetched successfully",
       ...result
