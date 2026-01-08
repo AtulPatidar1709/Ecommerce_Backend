@@ -12,6 +12,6 @@ const upload = multer({ storage });
 
 // For multiple images and one thumbnail
 export const uploadFields = upload.fields([
-  { name: 'images', maxCount: 10 },    // multiple images
+  { name: 'images', maxCount: 5 },    // multiple images
   { name: 'thumbnail', maxCount: 1 }   // single thumbnail
 ]);

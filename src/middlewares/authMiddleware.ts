@@ -51,26 +51,23 @@ export const authSocket = async (socket: any, next: (err?: Error) => void) => {
     const sid = socket.request.signedCookies?.sid;
 
     if (!sid) {
-      console.log("No cookies found in handshake");
-      return next(createHttpError(401, "Please Login First."));
+      socket.user = null;
+      socket.userId = null; 
+      return next();
     }
 
     // 4. Validate session in Database
     const session = await Session.findOne({ _id: sid });
     if (!session) {
-      return next(createHttpError(401,"session expired Please Login First."));
+      socket.user = null;
+      socket.userId = null;
+      return next();
     }
 
     // 5. Find User
     const user = await userModel.findById(session.userId);
-    if (!user) {
-        return next(createHttpError(404, "No User Found. Please Create an Account."));
-    }
-
-    // 6. Attach user to socket for use in listeners
-    socket.user = user;
-    socket.userId = user._id;
-
+    socket.user = user || null;
+    socket.userId = user ? user._id : null;
     next();
   } catch (error) {
     console.error("Socket Auth Error:", error);

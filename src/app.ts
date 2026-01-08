@@ -4,8 +4,8 @@ import cookieParser from 'cookie-parser';
 import { config } from './config/config';
 import userRouter from './user/userRoutes';
 import ErrorHandlerMiddleWare from './middlewares/ErrorHandlerMiddleWare';
-
-
+import compression from 'compression';
+import sitemapRoute from "./routes/sitemap";
 // Chat Bot - Imports
 import { Server } from 'socket.io';
 import { createServer } from 'http';
@@ -28,11 +28,14 @@ app.use(cookieParser(config.cookie_secret));
 
 const io = new Server(server, {
     cors: {
-        origin: config.frontendDomain,
+        origin: config.buildDomain,
         methods: ['GET', 'POST'],
         credentials: true,
     }
 });
+
+app.use(express.static("dist", { maxAge: "1y" }));
+app.use(compression())
 
 const wrap = (middleware: any) => (socket: any, next: any) => middleware(socket.request, {}, next);
 
@@ -47,13 +50,14 @@ io.on('connection', (socket : any) => {
 
 app.use(
     cors({
-        origin: config.frontendDomain,
+        origin: [config.frontendDomain!, config.buildDomain!],
         credentials: true,
     })
 );
 
 app.use('/api/payment/payment-verify', express.raw({ type: 'application/json' }));
 
+app.use("/", sitemapRoute);
 app.use(express.json());
 
 app.get("/", (req, res, next) => {

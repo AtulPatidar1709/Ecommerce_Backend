@@ -1,5 +1,6 @@
 import { model, Schema } from "mongoose";
 import { User } from "./userTypes";
+import { config } from "../config/config";
 
 const userModel = new Schema<User>({
   name: {
@@ -26,8 +27,7 @@ const userModel = new Schema<User>({
   },
   picture: {
     type: String,
-    default:
-      "https://static.vecteezy.com/system/resources/previews/002/318/271/non_2x/user-profile-icon-free-vector.jpg",
+    default: `${config.buildDomain}/images/default-user.jpg`,
   },
 }, { timestamps: true });
 

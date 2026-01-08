@@ -9,6 +9,7 @@ const _config = {
   cookie_secret: process.env.COOKIE_SECRET,
   googel_client_id: process.env.GOOGLE_CLIENT_ID,
   frontendDomain: process.env.FRONT_END_DOMAIN,
+  buildDomain: process.env.BUILD_DOMAIN,
   cloudinaryCloud: process.env.CLOUDINARY_CLOUD,
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
   cloudinarySecret: process.env.CLOUDINARY_API_SECRET,
