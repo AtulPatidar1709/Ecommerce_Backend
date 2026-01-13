@@ -1,18 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import { Product } from "./productModel";
 import createHttpError from "http-errors";
-import path from "path";
 import cloudinary from "../config/cloudinary";
-import fs from "node:fs";
 import { config } from "../config/config";
 import { ProductType } from "./productTypes";
+import { uploadFromBuffer } from "./helper";
 
 const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
   try {
 
     const page = Number(req.query.page) || 1;
-
-    console.log("Query ", page);
 
     const Product_Limit: number = Number(config.products_per_page) || 5;
     
@@ -80,43 +77,29 @@ const createProduct = async (req: Request, res: Response, next: NextFunction) =>
     const optimizeUrl = (url: string) => url.replace("/upload/", "/upload/f_auto,q_auto/");
 
     // Upload images to Cloudinary
-    const uploadedImages: string[] = [];
-    for (const file of files.images) {
-      const filePath = path.resolve(__dirname, "../../public/data/uploads", file.filename);
-      const result = await cloudinary.uploader.upload(filePath, {
-        folder: "product-images",
-        transformation: [{ quality: "auto", fetch_format: "auto" }],
-      });
-      uploadedImages.push(optimizeUrl(result.secure_url));
-      await fs.promises.unlink(filePath);
-    }
+    // Upload all product images in parallel
+    const uploadedImages = await Promise.all(
+      files.images.map(file =>
+        uploadFromBuffer(file.buffer, "product-images", [{ quality: "auto", fetch_format: "auto" }])
+          .then(optimizeUrl)
+      )
+    );
 
-
-    //upload Thumbnail
-    const thumbnailFile = files.thumbnail[0];
-    if(thumbnailFile === undefined) {
-      return next(createHttpError(301, "Please Provide Thumbnail"));
-    }
-    
-    const thumbnailPath = path.resolve(__dirname, "../../public/data/uploads", thumbnailFile?.filename);
-    const thumbnailUpload = await cloudinary.uploader.upload(thumbnailPath, {
-      folder: "product-thumbnails",
-      transformation: [
-        { width: 600, height: 600, crop: "fill" }
-      ]
-    });
-    
-    const thumbnailUrl = optimizeUrl(thumbnailUpload.secure_url);
-
-    // Delete local thumbnail
-    await fs.promises.unlink(thumbnailPath);
+        // Upload thumbnail
+    const thumbnailUrl = optimizeUrl(
+      await uploadFromBuffer(
+        files.thumbnail[0]!.buffer,
+        "product-thumbnails",
+        [{ width: 600, height: 600, crop: "fill" }]
+      )
+    );
 
     // Create product in database
     const product = await Product.create({
       title,
       description,
-      stock,
       price,
+      stock,
       discount,
       images: uploadedImages,
       thumbnail: thumbnailUrl,
@@ -182,8 +165,6 @@ const createProduct = async (req: Request, res: Response, next: NextFunction) =>
 const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.body;
-    
-    console.log("req body id " , id);
 
     if (!id) {
       return next(createHttpError(400, "Product Id missing."));

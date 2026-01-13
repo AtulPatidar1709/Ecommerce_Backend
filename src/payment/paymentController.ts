@@ -20,8 +20,6 @@ const createRazorpayOrder = async (req : Request, res : Response, next : NextFun
     try {
       const user = req.user as User;
 
-      console.log("User Info in create Pay ", user );
-
       const { address_Id, paymentMethod, totalAmount } = req.body;
 
       if (!address_Id || paymentMethod !== 'ONLINE')
@@ -34,13 +32,9 @@ const createRazorpayOrder = async (req : Request, res : Response, next : NextFun
       }
 
       const { totalAmountInPaise } = await getCartSummary(cart.items);
-      
-      console.log("totalAmountInPaise in Server Cart " , totalAmountInPaise);
 
       // 3. optional test override
       const finalPaise = process.env.FORCE_TEST_AMOUNT ? 100 : totalAmountInPaise;
-
-      console.log("finalPaise is - " + finalPaise + " total amount is - " + totalAmount * 100);
 
       if (finalPaise !== totalAmount * 100)
         throw new Error("Total amount mismatch");
@@ -82,8 +76,6 @@ const createRazorpayOrder = async (req : Request, res : Response, next : NextFun
 const fetchRazorPayOrder = async (req : Request, res : Response, next : NextFunction) => {
 
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderDetails } = req.body;
-
-  console.log("Payment Verify ", razorpay_order_id, razorpay_payment_id, razorpay_signature, orderDetails);
   
   try {
     const hmac = crypto.createHmac("sha256", config.RZP_TEST_KEY_SECRET || "")
@@ -115,8 +107,6 @@ const fetchRazorPayOrder = async (req : Request, res : Response, next : NextFunc
 
     if (!order) return res.status(404).json({ error: "Order not found" });
 
-    console.log('Order Status Updated to Paid by verify Fetch Razorpay end point ', order);
-
     res.status(200).json({ status: "success", message: "Order placed successfully", order });
 
   } catch (error) {
@@ -127,7 +117,7 @@ const fetchRazorPayOrder = async (req : Request, res : Response, next : NextFunc
 const fetchRazorPayOrderHook = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const received_signature = req.get("x-razorpay-signature");
-    const webHookSecret = config.RZP_TEST_KEY_WEBHOOK_SECRET; // ⚠️ Check this is defined
+    const webHookSecret = config.RZP_TEST_KEY_WEBHOOK_SECRET;
 
     if (!received_signature || !webHookSecret) {
       console.error("Missing signature or secret");
@@ -135,7 +125,7 @@ const fetchRazorPayOrderHook = async (req: Request, res: Response, next: NextFun
     }
     
     const rawBody = req.body.toString('utf8');
-    
+
     const isValidSignature = validateWebhookSignature(
       rawBody,
       received_signature,
@@ -166,8 +156,6 @@ const fetchRazorPayOrderHook = async (req: Request, res: Response, next: NextFun
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
-
-    console.log("OrderCreated in hook ", order);
 
     res.status(200).json({
       status: "success",

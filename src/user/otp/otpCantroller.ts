@@ -89,7 +89,6 @@ const loginWithGoogle = async (req: Request, res: Response, next: NextFunction) 
   const { credential } = req.body;
 
   try {
-    console.log("User credential is as follows : " , credential);
 
     const userData = await verifyIdToken(credential);
 
@@ -112,8 +111,6 @@ const loginWithGoogle = async (req: Request, res: Response, next: NextFunction) 
         emailVerified: true
       })
     };
-
-    console.log("User Details is as follows : " , user);
 
     if (!user) {
       try {

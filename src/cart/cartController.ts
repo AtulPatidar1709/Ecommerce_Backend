@@ -93,8 +93,6 @@ const removeFromCart = async (req: Request, res: Response, next: NextFunction) =
     const populated = await cart.populate("items.productId", "title price images discount");
     const result = formatCart(populated);
 
-    console.log("Populate Cart Item", result);
-
     res.status(204).json({ message: "Item removed from cart" });
 
   } catch (error) {

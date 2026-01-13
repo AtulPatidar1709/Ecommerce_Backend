@@ -8,7 +8,6 @@ import { Session } from "../session/sessionModels";
 import { NextFunction, Request, Response } from "express";
 
 const registerUser = async (req: Request, res: Response, next: NextFunction) => {
-
   try {
     const { name, email, password } = req.body;
 

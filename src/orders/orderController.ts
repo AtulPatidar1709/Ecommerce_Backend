@@ -44,8 +44,6 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
     if (!address_Id) {
       return next(createHttpError(400, "Address is required"));
     }
-    
-    console.log("Address_ID", address_Id);
 
     const { _id } = user;
 
@@ -54,9 +52,7 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const cart = await Cart.findOne({userId : _id});
-    
-    console.log("Cart Items : " , cart)
-    
+
     if(!cart) {
       return next(createHttpError("Cart not found"));
     }
@@ -75,8 +71,6 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
     });
 
     const cartData = await Cart.findOneAndDelete({_id : cart._id});
-
-    console.log("cartData ", cartData ); 
 
     return res.status(200).json({
       message: "Order Created Succssfully.",

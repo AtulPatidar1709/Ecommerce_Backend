@@ -25,7 +25,7 @@ router.get("/sitemap.xml", async (req, res) => {
 
   // 🔹 Dynamic product URLs
   const products = await Product.find().select("_id");
-  console.log(products);
+
   const productUrls = products.map(p => `
     <url>
       <loc>${BASE_URL}/products/${p._id}</loc>

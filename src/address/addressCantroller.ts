@@ -62,9 +62,6 @@ const createAddress = async (req: Request, res: Response, next: NextFunction) =>
 
     const { _id } = req.user;
 
-    console.log("Create Address Response ", req.body);
-    console.log("User Id at Create Address ", _id);
-
     const { line1, line2, city, state, zipCode, number } = req.body;
 
     if (!_id || !line1 || !city || !state || !zipCode || !number) {
@@ -97,10 +94,7 @@ const createAddress = async (req: Request, res: Response, next: NextFunction) =>
 
 const deleteAddress = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.body;
-
-    console.log("req data in address Delete ", id);
-
+    const { id } = req.body;\
     if (!id) {
       return next(createHttpError(400, "Please Provide Product Id."));
     }
